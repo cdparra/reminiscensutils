@@ -1,3 +1,7 @@
+BEGIN;
+
+SET @personid := 97;
+
 # Life stories of a person for his BOOK - Titles and date/location information for checking
 select 
 #	l.life_event_id,
@@ -22,11 +26,14 @@ from Life_Event l
 	join Fuzzy_Date fd on l.fuzzy_startdate = fd.fuzzy_date_id
 	join Location loc on l.location_id = loc.location_id
 where 
-person_id=66
-order by if ((fd.year is null),fd.decade,fd.year);
+person_id=@personid 
+order by if ((fd.year is null),fd.decade,fd.year)
+INTO OUTFILE '/tmp/storie-senzafotourl.csv'
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n';
 
-
-select * from File where filename="U_65_D2013-10-28T09:30:50.159-04:00_concerto col %22New Quartet%22 dicembre 1997.jpeg";
+#select * from File where filename="U_65_D2013-10-28T09:30:50.159-04:00_concerto col %22New Quartet%22 dicembre 1997.jpeg";
 
 
 # Life stories of a person for his BOOK
@@ -57,6 +64,10 @@ from Life_Event l
 	join Fuzzy_Date fd on l.fuzzy_startdate = fd.fuzzy_date_id
 	join Location loc on l.location_id = loc.location_id
 where 
-person_id=66;
+person_id=@personid 
+INTO OUTFILE '/tmp/storie.csv'
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n';
 
-
+COMMIT;
