@@ -123,7 +123,7 @@ with open(csv_file, 'rb') as csvfile:
 
 			# do not download twice
 			if not os.path.exists(path):
-				print "Downloading picture ("+photoid+") "+picname+" of story ("+storyid+") '"+title+"'"
+				print "### Downloading picture ("+photoid+") "+picname+" of story ("+storyid+") '"+title+"'"
 				download_picture(url,path)
 			else: 
 				print "Already downloaded picture ("+photoid+") "+picname+" of story ("+storyid+") '"+title+"'"
