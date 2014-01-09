@@ -28,6 +28,7 @@ def download_picture(url,name):
 def convert_to_pdf(file): 
 	print("Converting ", file.name, " to PDF...")
 	out_file = file.name+".pdf"
+
 	subprocess.call([
 		"pandoc",
 		file.name,
@@ -70,7 +71,7 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 	
 	# TODO: support reading dynamic model of metadata
 	# right now, using specifically structured csv for my current need 
-	included_cols = [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13]  
+	included_cols = [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14]  
 
 	storyidList = []
 
@@ -92,6 +93,7 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 		region = content[10].strip()
 		city = content[11].strip()
 		place = content[12].strip()
+		fotohash = content[13].strip()
 		
 		#print("storyid = ",content[0],"\n")
 		#print("title = ",content[1].strip(),"\n")
@@ -165,9 +167,10 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 			#img = "** Foto # "+photoid+" **\n"
 			#img += "<img src=\""+browserpath+"\" width=\"200\"/>"
 			#storywithpics.write(img+"\n\n")
-			pic_small_url = "http://base.reminiscens.me/files/SMALL_"+picname_for_markdown
-			img = "** Foto # "+photoid+" **\n"
-			img += "![]("+pic_small_url+")"
+			print( "### Printing picture "+fotohash+" to "+storywithpics.name)
+
+			pic_small_url = "http://base.reminiscens.me/lifeapi/file/"+fotohash+"/SMALL"
+			img = "![Foto "+photoid+" della storia "+storyid+"]("+pic_small_url+")"
 			storywithpics.write(img+"\n\n")
 
 			# do not download twice
@@ -181,10 +184,11 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 		else: 
 			print( "Story '"+title+"' has no valid URL associated")
 
+storyout.close()
+storydata.close()
+storywithpics.close()
+
 convert_to_pdf(storyout)
 convert_to_pdf(storydata)
 convert_to_pdf(storywithpics)
 
-storyout.close()
-storydata.close()
-storywithpics.close()

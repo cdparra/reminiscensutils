@@ -1,6 +1,26 @@
 BEGIN;
 
-SET @personid := 97;
+#SET @personid := 70; # DONE: Raffaella Keller
+#SET @personid := 71; # Paolina Santini
+#SET @personid := 74; # Antonio Zambella
+#SET @personid := 76; # Maria Greca
+#SET @personid := 90; # Carla Bevilacqua
+#SET @personid := 90; # Antonietta Bevilacqua
+#SET @personid := 78; # Maria Grazia Frainer
+#SET @personid := 79; # DONE: Alma Meggio 
+#SET @personid := 80; # Pia Pedergnana
+#SET @personid := 84; # Giulio Flessati
+#SET @personid := 84; # Maria Zanon
+#SET @personid := 88; # Rita Lunelli
+#SET @personid := 91; # Iole Gregori
+#SET @personid := 94; # Teresa Gottardi
+#SET @personid := 95; # Bruna Giovanini
+#SET @personid := 96; # Germana Franceschini
+SET @personid := 97; # María Antonia Ravanelli
+
+SET @csvoutput1 := concat("/tmp/",@personid,"_storie-senzafotourl.csv");
+SET @csvoutput2 := concat("/tmp/",@personid,"_storie.csv");
+
 
 # Life stories of a person for his BOOK - Titles and date/location information for checking
 select 
@@ -28,7 +48,7 @@ from Life_Event l
 where 
 person_id=@personid 
 order by if ((fd.year is null),fd.decade,fd.year)
-INTO OUTFILE '/tmp/storie-senzafotourl.csv'
+INTO OUTFILE '/tmp/storie-senzaurl.csv'
 FIELDS TERMINATED BY ','
 ENCLOSED BY '"'
 LINES TERMINATED BY '\n';
@@ -56,7 +76,8 @@ select
 		if (loc.name is null,loc.location_textual,
 			concat(loc.location_textual,loc.name)
 			)
-		) as 'posto'
+		) as 'posto',
+	f.hashcode as 'fotohash'
 from Life_Event l
 	left outer join Memento m on m.life_event_id=l.life_event_id 
 	left outer join File f on f.hashcode = m.file_hashcode
@@ -64,7 +85,7 @@ from Life_Event l
 	join Fuzzy_Date fd on l.fuzzy_startdate = fd.fuzzy_date_id
 	join Location loc on l.location_id = loc.location_id
 where 
-person_id=@personid 
+person_id=@personid
 INTO OUTFILE '/tmp/storie.csv'
 FIELDS TERMINATED BY ','
 ENCLOSED BY '"'
