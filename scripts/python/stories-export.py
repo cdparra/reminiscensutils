@@ -44,22 +44,32 @@ def convert_to_pdf(file):
 def download_stories(person_id, url):
 	print("*** TODO ***\n\n")
 
-def print_avviso(file):
-	avviso = "# Bozza del libro finale di Reminiscens\n"
+def print_avviso(file, person_name):
+	avviso = "# Bozza del libro finale di Reminiscens per **"+person_name+"**\n"
 	avviso += "Questa è una bozza del contenuto che sarebbe inserito nel tuo libro "
 	avviso += "finale di reminiscens. Ti chiediamo gentilmente di fare un controllo "
-	avviso += "completo e di indicare ai ricercatori  le seguente cose, tramite email "
-	avviso += "a **cdparra@gmail.com** oppure lasciando una copia di questa bozza con i "
-	avviso += "commenti nel CSA al massimo il **15/gennaio:**\n\n"
-	avviso += "1. Errori da correggere nel testo\n"
-	avviso += "2. Se ci sono storie da non includere, indicare il numero della storia\n"
-	avviso += "3. Se ci sono foto o storie che non sono state incluse.\n"
-	avviso += "4. Scegliere 3 o 4 storie preferite, da includere nel libro finale generale\n"
-	avviso += "per il CSA, e indicare il numero di queste storie.\n\n"
+	avviso += "completo e ti invitiamo a correggere dei problemi o errori che trovi "
+	avviso += "attraverso la pagina web di reminiscens (base.reminiscens.me/ui), "
+	avviso += "al massimo prima della mattina del **15/gennaio.** \n\n"
+	avviso += "Se non riesci a correggere tutto per il 15/gennaio, ti chidiamo "
+	avviso += "gentilmente di indicare ai ricercatori quali sono i problemi/errori da "
+	avviso += "corregere tramite un'email a **cdparra@gmail.com**, oppure consegnando "
+	avviso += "una copia di questa bozza con i commenti.\n\n"
+	avviso += "Inoltre, ti chiediamo di **scegliere 3 o 4 storie preferite che saresti "
+	avviso += "d'accordo ad includere in un libro finale generale che sará consegnato al CSA.** "
+	avviso += "Invia il numero e titolo di queste storie tramite email a **cdparra@gmail.com** "
+	avviso += "prima del **19/gennaio.** \n\n"
 	avviso += "Osservazioni: \n\n"
-	avviso += "* Questa e solo una bozza, non è ancora impaginata come sarà nella versione finale\n"
-	avviso += "* La orientazione e dimensione delle foto saranno sistemate nel libro finale, in"
-	avviso += "questa bozza si trova soltanto una anteprima\n\n\n"
+	avviso += "* Se hai già controllato e corretto tutto prima, no c'e bisogno di farlo di nuovo\n"
+	avviso += "* Questa è solo una bozza per controllo, non è ancora impaginata come "
+	avviso += "sarà nella versione finale (che certamente sarà molto più bella)\n"
+	avviso += "* L'orientazione e dimensione delle foto saranno sistemate/ottimizzate "
+	avviso += "nel libro finale. Le foto in questa bozza sono soltanto una anteprima con "
+	avviso += "l'obiettivo di facilitare il controllo.\n\n"
+	avviso += "* Per alcuni errori di sistema, e possibile che in alcune storie la 'domanda collegata' "
+	avviso += "sia sbagliata. Non devi preoccuparti di questi errori, saranno sistemati automaticamente.\n\n"
+	avviso += "* Una copia stampata della bozza sarà disponibile al CSA.\n\n"
+	avviso += "Vi saluta cordialmente,\n Il team di Reminiscens\n\n\n"
 
 	file.write(avviso)
 
@@ -72,6 +82,7 @@ parser.add_argument('dir', help='directory where pictures should be saved', acti
 parser.add_argument('outtesto', help='output file for stories', type=argparse.FileType('a', encoding='UTF-8'),default=sys.stdout)
 parser.add_argument('outmeta', help='output file for stories', type=argparse.FileType('a', encoding='UTF-8'),default=sys.stdout)
 parser.add_argument('outfull', help='output file for stories with embedded pictures', type=argparse.FileType('a', encoding='UTF-8'),default=sys.stdout)
+parser.add_argument('person', help='name of the person', type=str)
 parser.add_argument('--onlypdf', help='skip story processing and jumpt to pdf generations from output files', action='store_true')
 args = parser.parse_args()
 
@@ -82,6 +93,7 @@ storyout = args.outtesto
 storydata = args.outmeta
 storywithpics = args.outfull
 onlypdf = args.onlypdf
+person_name = args.person
 
 if onlypdf:
 	convert_to_pdf(storyout)
@@ -93,9 +105,9 @@ else:
 	storywithpics.truncate(0)
 	storydata.truncate(0)
 
-print_avviso(storyout)
-print_avviso(storydata)
-print_avviso(storywithpics)
+print_avviso(storyout,person_name)
+print_avviso(storydata,person_name)
+print_avviso(storywithpics,person_name)
 
 # open csv file (resulting of a mysql export)
 with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
@@ -164,7 +176,7 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 				output+="-"+day
 
 			output+="**\n"
-			output += " * Dove: **"
+			output += " * Dove: ** "
 
 			if place!="":
 				output+=place+", "
@@ -184,14 +196,16 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 				output+="* **Articolo di contesto collegato:** *("+pid+") "+ptitle+"*\n"
 				output+="* **URL dell'Articolo di contesto collegato:** *("+purl+")*\n"
 
+			output+="\n"
+
 			# write metadata of the story in a file
 			storydata.write(output+"\n\n")
 
-			output+=text+"\n\n---"
+			output+=text+"\n\n"
 
 			# write metadata plus text of the story in a file
-			storyout.write(output+"\n\n")
-			storywithpics.write(output+"\n\n")
+			storyout.write(output)
+			storywithpics.write(output)
 
 		p = re.compile('http*') # pattern to test if the url is http
 
