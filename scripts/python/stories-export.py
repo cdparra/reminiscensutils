@@ -31,19 +31,37 @@ def convert_to_pdf(file):
 
 	subprocess.call([
 		"pandoc",
+		"-V geometry:margin=1in",
 		file.name,
 		"-o",
 		out_file,
 		"--highlight-style=Zenburn",
-		"--number-sections",
+		"--number-sections"#,
 		# Table of contents
-		"--toc"
+	#	"--toc"
 	])
 
 def download_stories(person_id, url):
 	print("*** TODO ***\n\n")
 
+def print_avviso(file):
+	avviso = "# Bozza del libro finale di Reminiscens\n"
+	avviso += "Questa è una bozza del contenuto che sarebbe inserito nel tuo libro "
+	avviso += "finale di reminiscens. Ti chiediamo gentilmente di fare un controllo "
+	avviso += "completo e di indicare ai ricercatori  le seguente cose, tramite email "
+	avviso += "a **cdparra@gmail.com** oppure lasciando una copia di questa bozza con i "
+	avviso += "commenti nel CSA al massimo il **15/gennaio:**\n\n"
+	avviso += "1. Errori da correggere nel testo\n"
+	avviso += "2. Se ci sono storie da non includere, indicare il numero della storia\n"
+	avviso += "3. Se ci sono foto o storie che non sono state incluse.\n"
+	avviso += "4. Scegliere 3 o 4 storie preferite, da includere nel libro finale generale\n"
+	avviso += "per il CSA, e indicare il numero di queste storie.\n\n"
+	avviso += "Osservazioni: \n\n"
+	avviso += "* Questa e solo una bozza, non è ancora impaginata come sarà nella versione finale\n"
+	avviso += "* La orientazione e dimensione delle foto saranno sistemate nel libro finale, in"
+	avviso += "questa bozza si trova soltanto una anteprima\n\n\n"
 
+	file.write(avviso)
 
 # Main Program
 # command arguments
@@ -51,9 +69,10 @@ parser = argparse.ArgumentParser(description='download photos from URLs listed i
 	fromfile_prefix_chars="@")
 parser.add_argument('file', help='csv file with URLs', action='store')
 parser.add_argument('dir', help='directory where pictures should be saved', action='store')
-parser.add_argument('outtesto', help='output file for stories', type=argparse.FileType('w', encoding='UTF-8'),default=sys.stdout)
-parser.add_argument('outmeta', help='output file for stories', type=argparse.FileType('w', encoding='UTF-8'),default=sys.stdout)
-parser.add_argument('outfull', help='output file for stories with embedded pictures', type=argparse.FileType('w', encoding='UTF-8'),default=sys.stdout)
+parser.add_argument('outtesto', help='output file for stories', type=argparse.FileType('a', encoding='UTF-8'),default=sys.stdout)
+parser.add_argument('outmeta', help='output file for stories', type=argparse.FileType('a', encoding='UTF-8'),default=sys.stdout)
+parser.add_argument('outfull', help='output file for stories with embedded pictures', type=argparse.FileType('a', encoding='UTF-8'),default=sys.stdout)
+parser.add_argument('--onlypdf', help='skip story processing and jumpt to pdf generations from output files', action='store_true')
 args = parser.parse_args()
 
 # parse arguments
@@ -62,6 +81,21 @@ picsdir = args.dir
 storyout = args.outtesto
 storydata = args.outmeta
 storywithpics = args.outfull
+onlypdf = args.onlypdf
+
+if onlypdf:
+	convert_to_pdf(storyout)
+	convert_to_pdf(storydata)
+	convert_to_pdf(storywithpics)
+	sys.exit("converted to pdf")
+else: 
+	storyout.truncate(0)
+	storywithpics.truncate(0)
+	storydata.truncate(0)
+
+print_avviso(storyout)
+print_avviso(storydata)
+print_avviso(storywithpics)
 
 # open csv file (resulting of a mysql export)
 with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
@@ -71,7 +105,7 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 	
 	# TODO: support reading dynamic model of metadata
 	# right now, using specifically structured csv for my current need 
-	included_cols = [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14]  
+	included_cols = [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14,15,16,17,18,19]  
 
 	storyidList = []
 
@@ -94,6 +128,12 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 		city = content[11].strip()
 		place = content[12].strip()
 		fotohash = content[13].strip()
+		qid = content[14]
+		qtext= content[15].strip()
+		pid = content[16]
+		ptitle = content[17].strip()
+		purl = content[18].strip()
+
 		
 		#print("storyid = ",content[0],"\n")
 		#print("title = ",content[1].strip(),"\n")
@@ -110,12 +150,13 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 		#print("place = ",content[12].strip(),"\n")
 
 		# process the text of the story only once and ignore in the following lines
+
 		try:
 			storyidList.index(storyid) 
 		except ValueError:
 			storyidList.append(storyid)
 
-			output = "## STORIA *("+storyid+") "+title+ "*\n\n"
+			output= "## STORIA *("+storyid+") "+title+ "*\n\n"
 			output+=" * Quando: **"+year
 			if int(month) > 0:
 				output+="-"+month
@@ -132,7 +173,16 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 			if region!="":
 				output+=region+", "
 			if country!="":
-				output+=country+"**\n"
+				output+=country
+
+			output+="**\n"
+
+			if qid != 'N':
+				output+="* **Domanda collegata:** *("+qid+") "+qtext+"*\n"
+		
+			if pid != 'N':  
+				output+="* **Articolo di contesto collegato:** *("+pid+") "+ptitle+"*\n"
+				output+="* **URL dell'Articolo di contesto collegato:** *("+purl+")*\n"
 
 			# write metadata of the story in a file
 			storydata.write(output+"\n\n")

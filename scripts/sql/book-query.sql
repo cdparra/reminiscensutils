@@ -6,17 +6,20 @@ BEGIN;
 #SET @personid := 76; # Maria Greca
 #SET @personid := 90; # Carla Bevilacqua
 #SET @personid := 90; # Antonietta Bevilacqua
-#SET @personid := 78; # Maria Grazia Frainer
+#SET @personid := 78; # Maria Grazia Frainer 
 #SET @personid := 79; # DONE: Alma Meggio 
-#SET @personid := 80; # Pia Pedergnana
-#SET @personid := 84; # Giulio Flessati
-#SET @personid := 84; # Maria Zanon
-#SET @personid := 88; # Rita Lunelli
-#SET @personid := 91; # Iole Gregori
-#SET @personid := 94; # Teresa Gottardi
-#SET @personid := 95; # Bruna Giovanini
-#SET @personid := 96; # Germana Franceschini
+SET @personid := 80; # Pia Pedergnana
+SET @personid := 84; # Giulio Flessati
+SET @personid := 84; # Maria Zanon
+SET @personid := 88; # Rita Lunelli
+SET @personid := 91; # Iole Gregori
+SET @personid := 94; # Teresa Gottardi
+SET @personid := 95; # Bruna Giovanini
+SET @personid := 96; # Germana Franceschini
 SET @personid := 97; # María Antonia Ravanelli
+
+
+
 
 SET @csvoutput1 := concat("/tmp/",@personid,"_storie-senzafotourl.csv");
 SET @csvoutput2 := concat("/tmp/",@personid,"_storie.csv");
@@ -47,7 +50,8 @@ from Life_Event l
 	join Location loc on l.location_id = loc.location_id
 where 
 person_id=@personid 
-order by if ((fd.year is null),fd.decade,fd.year)
+#order by if ((fd.year is null),fd.decade,fd.year)
+order by fd.decade asc, fd.year asc, fd.month asc, fd.day asc
 INTO OUTFILE '/tmp/storie-senzaurl.csv'
 FIELDS TERMINATED BY ','
 ENCLOSED BY '"'
@@ -77,15 +81,24 @@ select
 			concat(loc.location_textual,loc.name)
 			)
 		) as 'posto',
-	f.hashcode as 'fotohash'
+	f.hashcode as 'fotohash',
+	l.question_id as 'question_id',
+	qt.question_text as 'question_text',
+	l.public_memento_id as 'public_memento_id',
+	pm.headline as 'public_memento_title',
+	pm.resource_url as 'public_memento_url'
 from Life_Event l
 	left outer join Memento m on m.life_event_id=l.life_event_id 
 	left outer join File f on f.hashcode = m.file_hashcode
 	join Participant p on p.life_event_id = l.life_event_id
 	join Fuzzy_Date fd on l.fuzzy_startdate = fd.fuzzy_date_id
 	join Location loc on l.location_id = loc.location_id
+	left outer join Question q on q.question_id = l.question_id
+	left outer join Question_Trans qt on q.question_id = qt.question_id and qt.locale='it_IT'
+	left outer join Public_Memento pm on pm.public_memento_id = l.public_memento_id
 where 
 person_id=@personid
+order by fd.decade asc, fd.year asc, fd.month asc, fd.day asc
 INTO OUTFILE '/tmp/storie.csv'
 FIELDS TERMINATED BY ','
 ENCLOSED BY '"'
