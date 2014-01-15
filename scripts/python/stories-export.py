@@ -195,10 +195,12 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 
 			output+="**\n"
 
-			if qid != 'N':
+			if (qid != 'N' and qid != None and qid != ''):
+				print("--> Domanda collegata found: "+qid)
 				output+="* **Domanda collegata:** *("+qid+") "+qtext+"*\n"
 		
-			if pid != 'N':  
+			if (pid != 'N' and pid != None and pid != ''):  
+				print("--> Public Memento collegato found: "+pid)
 				output+="* **Articolo di contesto collegato:** *("+pid+") "+ptitle+"*\n"
 				output+="* **URL dell'Articolo di contesto collegato:** *("+purl+")*\n"
 
