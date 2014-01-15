@@ -1,3 +1,5 @@
 *.conf
 *.pdf
 *.csv
+*.cfg
+*.md
