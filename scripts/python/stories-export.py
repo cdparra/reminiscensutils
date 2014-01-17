@@ -39,7 +39,9 @@ def convert_to_pdf(file):
 		"-o",
 		out_file,
 		"--highlight-style=Zenburn",
-		"--number-sections"#,
+		"--number-sections",
+		"--latex-engine=xelatex"
+		#,
 		# Table of contents
 	#	"--toc"
 	])
@@ -174,6 +176,9 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 		except ValueError:
 			storyidList.append(storyid)
 
+
+			# title = re.sub('[\']', '\\\'', title.strip())
+
 			output= "## STORIA *("+storyid+") "+title+ "*\n\n"
 			output+=" * Quando: **"+year
 			if int(month) > 0:
@@ -182,7 +187,7 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 				output+="-"+day
 
 			output+="**\n"
-			output += " * Dove: ** "
+			output += " * Dove: **"
 
 			if place!="":
 				output+=place+", "
@@ -208,7 +213,7 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 
 			# write metadata of the story in a file
 			storydata.write(output+"\n\n")
-
+			# text = re.sub('[\']', '\\\'', text.strip())
 			output+=text+"\n\n"
 
 			# write metadata plus text of the story in a file
