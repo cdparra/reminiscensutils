@@ -11,6 +11,7 @@ import sys, argparse, csv
 import re
 import subprocess
 import time
+from bs4 import BeautifulSoup
 
 def download_picture(url,name):
     """
@@ -29,8 +30,19 @@ def convert_to_pdf(file):
 	# Beware that when there are two many picture urs in a story, two erros might happen
 	# 1. Latex's "Too many unprocessed floats" 
 	# 2. Random URL's not being able to download
-	print("Converting ", file.name, " to PDF...")
-	out_file = file.name+".pdf"
+
+	#out_file = file.name+".pdf"
+
+	# quick fix to name the pdf with person name
+	(head,tail) = os.path.split(file.name) # (..../id - person_name/aux,storie-con-foto.md)
+	(head,tail) = os.path.split(head)      # (..../id - person_name,aux)
+	(head,tail) = os.path.split(head)      # (....,id - person_name)
+	out_file_name = tail+".pdf"
+	out_file = os.path.join(tail,"aux")
+	out_file = os.path.join(out_file,out_file_name)
+
+
+	print("Converting ", file.name, " to PDF... >>> ", out_file)
 
 	subprocess.call([
 		"pandoc",
@@ -78,6 +90,32 @@ def print_avviso(file, person_name):
 
 	file.write(avviso)
 
+def print_intro(file, person_name):
+	avviso = "# Storia di Vita di **"+person_name+"**\n"
+	avviso += "In questo libro di vita, "+person_name+" ci racconta alcuna delle sue più belle storie di vita, "
+	avviso += "così come l'ha raccontato a voce durante durante il progetto di ricerca sulla reminiscenza assistita dalla tecnologia: \"Reminiscens\", "
+	avviso += "da ottobre a dicembre del 2013. \n\n"
+	avviso += "\"Reminiscens\" è stato organizzato dal gruppo di ricerca Lifeparticipation del Dipartimento di Ingegneria e Scienza dell'Informazione in "
+	avviso += "collaborazione con il Dipartimento di Sociologia e Ricerca Sociale dell'Università di Trento.\n\n"
+	file.write(avviso)
+
+def print_intro_csa(file):
+	avviso = "# Storia di Vita delle persone che fanno il CSA 'Contrada Larga' di via Belenzani\n"
+	avviso += "In questo libro di vita, "+person_name+" ci racconta alcuna delle sue più belle storie di vita, "
+	avviso += "così come l'ha raccontato a voce durante durante il progetto di ricerca sulla reminiscenza assistita dalla tecnologia: \"Reminiscens\", "
+	avviso += "da ottobre a dicembre del 2013. \n\n"
+	avviso += "\"Reminiscens\" è stato organizzato dal gruppo di ricerca Lifeparticipation del Dipartimento di Ingegneria e Scienza dell'Informazione in "
+	avviso += "collaborazione con il Dipartimento di Sociologia e Ricerca Sociale dell'Università di Trento.\n\n"
+	file.write(avviso)
+
+def removeTags(html, *tags):
+    soup = BeautifulSoup(html)
+    for tag in tags:
+        for tag in soup.findAll(tag):
+            tag.replaceWith("")
+
+    return str(soup)
+
 # Main Program
 # command arguments
 parser = argparse.ArgumentParser(description='download photos from URLs listed in csv',\
@@ -90,6 +128,8 @@ parser.add_argument('outfull', help='output file for stories with embedded pictu
 parser.add_argument('person', help='name of the person', type=str)
 parser.add_argument('--onlylocal', help='skip story processing and jumpt to pdf generations from output files', action='store_true')
 parser.add_argument('--onlypdf', help='skip story processing and jumpt to pdf generations from output files', action='store_true')
+parser.add_argument('--onlytext', help='skip story processing and jumpt to text generation from output files', action='store_true')
+parser.add_argument('--csa', help='skip story processing and jumpt to text generation from output files', action='store_true')
 args = parser.parse_args()
 
 # parse arguments
@@ -98,9 +138,21 @@ picsdir = args.dir
 storyout = args.outtesto
 storydata = args.outmeta
 storywithpics = args.outfull
+
+# quick fix to name the pdf with person name
+(head,tail) = os.path.split(storywithpics.name) # (..../id - person_name/aux,storie-con-foto.md)
+(head,tail) = os.path.split(head)      # (..../id - person_name,aux)
+(head,tail) = os.path.split(head)      # (....,id - person_name)
+tail_txt = tail+".txt"
+txtfile = os.path.join(tail,"aux")
+txtfile = os.path.join(txtfile,tail_txt)
+storywithpicstxt = open(txtfile,"w")
+
 onlypdf = args.onlypdf
+onlytext = args.onlytext
 person_name = args.person
 onlylocal = args.onlylocal
+librocsa = args.csa
 
 
 if onlypdf:
@@ -108,14 +160,21 @@ if onlypdf:
 	convert_to_pdf(storydata)
 	convert_to_pdf(storywithpics)
 	sys.exit("converted to pdf")
-else: 
+else:
 	storyout.truncate(0)
 	storywithpics.truncate(0)
 	storydata.truncate(0)
 
-print_avviso(storyout,person_name)
-print_avviso(storydata,person_name)
-print_avviso(storywithpics,person_name)
+print_intro(storyout,person_name)
+print_intro(storydata,person_name)
+print_intro(storywithpics,person_name)
+print_intro(storywithpicstxt,person_name)
+
+if librocsa:
+	print_intro_csa(storyout)
+	print_intro_csa(storydata)
+	print_intro_csa(storywithpics)
+	print_intro_csa(storywithpicstxt)
 
 # open csv file (resulting of a mysql export)
 with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
@@ -125,7 +184,9 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 	
 	# TODO: support reading dynamic model of metadata
 	# right now, using specifically structured csv for my current need 
-	included_cols = [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14,15,16,17,18,19]  
+	included_cols = [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]  
+	if (librocsa):
+		included_cols = [0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]  
 
 	storyidList = []
 
@@ -137,6 +198,7 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 		storyid = content[0]	
 		title = content[1].strip() 		
 		text = content[2].strip()
+		text = removeTags(text,'p','span','div','em','strong')
 		photoid = content[3]
 		url = content[4].strip()
 		picname = content[5].strip()
@@ -153,6 +215,30 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 		pid = content[16]
 		ptitle = content[17].strip()
 		purl = content[18].strip()
+
+		if librocsa: 
+			person_name = content[0].strip()
+			storyid = content[1]	
+			title = content[2].strip() 		
+			text = content[3].strip()
+			text = removeTags(text,'p','span','div','em','strong')
+			photoid = content[4]
+			url = content[5].strip()
+			picname = content[6].strip()
+			year = content[7]
+			month = content[8]
+			day = content[9]
+			country = content[10].strip()
+			region = content[11].strip()
+			city = content[12].strip()
+			place = content[13].strip()
+			fotohash = content[14].strip()
+			qid = content[15]
+			qtext= content[16].strip()
+			pid = content[17]
+			ptitle = content[18].strip()
+			purl = content[19].strip()
+
 
 		
 		#print("storyid = ",content[0],"\n")
@@ -179,7 +265,12 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 
 			# title = re.sub('[\']', '\\\'', title.strip())
 
-			output= "## STORIA *("+storyid+") "+title+ "*\n\n"
+			titolo_tmp = "## STORIA *("+storyid+") "+title
+
+			if librocsa:
+				titolo_tmp = "## STORIA *("+storyid+") "+"("+person_name+") "+title 
+			
+			output= titolo_tmp+ "*\n\n"
 			output+=" * Quando: **"+year
 			if int(month) > 0:
 				output+="-"+month
@@ -219,6 +310,7 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 			# write metadata plus text of the story in a file
 			storyout.write(output)
 			storywithpics.write(output)
+			storywithpicstxt.write(output)
 
 		p = re.compile('http*') # pattern to test if the url is http
 
@@ -230,7 +322,11 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 			title = re.sub('["?]', '', title.strip())
 			picname = re.sub('["?]', '', picname.strip())
 			picname_for_markdown = re.sub('[)]', '\)', picname)
-			storypath = storyid + "_" + title 
+			storypath = storyid + "_" + title
+
+			if librocsa:  
+				storypath = person_name + "_" + storyid + "_" + title
+
 			
 			# Donwload LARGE picture for BOOK
 			dirpath = os.path.abspath(os.path.join(picsdir,storypath))
@@ -284,6 +380,7 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 
 			img = "![Foto "+photoid+" della storia "+storyid+"]("+url+")"
 			storywithpics.write(img+"\n\n")
+			storywithpicstxt.write(img+"\n\n")
 
 		else: 
 			print( "Story '"+title+"' has no valid URL associated")
@@ -291,6 +388,7 @@ with open(csv_file, 'rt', encoding='iso-8859-1') as csvfile:
 storyout.close()
 storydata.close()
 storywithpics.close()
+storywithpicstxt.close()
 
 convert_to_pdf(storyout)
 convert_to_pdf(storydata)

@@ -12,6 +12,7 @@ class ReminiscensDB:
 
 	def __init__(self,config_file="reminiscens.conf"):
 		# Reading of configuration parameters
+		print("Using configuration from: "+config_file)
 		config = configparser.RawConfigParser()
 		config.read(config_file)
 

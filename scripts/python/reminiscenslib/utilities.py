@@ -15,8 +15,8 @@ import reminiscenslib.queries as remiq
 
 class Utilities: 
 	@staticmethod
-	def getStoriesOfPerson(person_id):
-		rdb = remidb.ReminiscensDB()
+	def getStoriesOfPerson(person_id, config="reminiscens.conf"):
+		rdb = remidb.ReminiscensDB(config)
 		db = rdb.getConnection()
 		q = remiq.Queries.storiesOfPerson(person_id)
 		cur=db.cursor()
@@ -27,8 +27,8 @@ class Utilities:
 
 
 	@staticmethod
-	def getStoriesOfPersonWithMementos(person_id):
-		rdb = remidb.ReminiscensDB()
+	def getStoriesOfPersonWithMementos(person_id, config="reminiscens.conf"):
+		rdb = remidb.ReminiscensDB(config)
 		db = rdb.getConnection()
 		q = remiq.Queries.storiesOfPersonWithMementos(person_id)
 		cur=db.cursor()

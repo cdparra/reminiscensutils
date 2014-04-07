@@ -1,23 +1,23 @@
+
 BEGIN;
 
-#SET @personid := 70; # DONE: Raffaella Keller
+#SET @personid := 70; # Raffaella Keller
 #SET @personid := 71; # Paolina Santini
 #SET @personid := 74; # Antonio Zambella
-#SET @personid := 76; # Maria Greca
+SET @personid := 76; # Maria Greca
 #SET @personid := 90; # Carla Bevilacqua
 #SET @personid := 90; # Antonietta Bevilacqua
 #SET @personid := 78; # Maria Grazia Frainer 
-#SET @personid := 79; # DONE: Alma Meggio 
-SET @personid := 80; # Pia Pedergnana
-SET @personid := 84; # Giulio Flessati
-SET @personid := 84; # Maria Zanon
-SET @personid := 88; # Rita Lunelli
-SET @personid := 91; # Iole Gregori
-SET @personid := 94; # Teresa Gottardi
-SET @personid := 95; # Bruna Giovanini
-SET @personid := 96; # Germana Franceschini
-SET @personid := 97; # María Antonia Ravanelli
-
+#SET @personid := 79; # Alma Meggio 
+#SET @personid := 80; # Pia Pedergnana
+#SET @personid := 84; # Giulio Flessati
+#SET @personid := 84; # Maria Zanon
+#SET @personid := 88; # Rita Lunelli
+#SET @personid := 91; # Iole Gregori
+#SET @personid := 94; # Teresa Gottardi
+#SET @personid := 95; # Bruna Giovanini
+#SET @personid := 96; # Germana Franceschini
+#SET @personid := 97; # María Antonia Ravanelli
 
 
 

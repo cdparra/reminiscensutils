@@ -52,12 +52,17 @@ parser = argparse.ArgumentParser(description='download photos from URLs listed i
 parser.add_argument('person_id', help='person id', action='store')
 parser.add_argument('csvfile', help='output csv for stories')
 parser.add_argument('--nopictures', help='skip pictures', action='store_true')
+parser.add_argument('--config', help='skip pictures', action='store')
 args = parser.parse_args()
 
 # parse arguments
 csv_file = args.csvfile
 person_id = args.person_id
 nopics = args.nopictures
+if args.config != None:
+	config = args.config
+else:
+	config = "reminiscens.conf"
 
 with open(csv_file, 'w', encoding='iso-8859-1') as csvfile:
 	# configure dialect such that double quotes inside the text that are escaped by '/' will be ignored
@@ -65,8 +70,8 @@ with open(csv_file, 'w', encoding='iso-8859-1') as csvfile:
 	storywriter = csv.writer(csvfile, dialect='reminiscens')
 
 	if nopics:
-		result = rutil.Utilities.getStoriesOfPerson(person_id)
+		result = rutil.Utilities.getStoriesOfPerson(person_id,config)
 		rutil.Utilities.writeResultsToCSV(result,storywriter)
 	else:
-		result = rutil.Utilities.getStoriesOfPersonWithMementos(person_id)
+		result = rutil.Utilities.getStoriesOfPersonWithMementos(person_id,config)
 		rutil.Utilities.writeResultsToCSV(result,storywriter)
